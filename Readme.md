@@ -14,7 +14,7 @@ API sederhana untuk manajemen Todo menggunakan Express dan Prisma (MySQL).
     Mendapatkan todo berdasarkan ID.
   - **POST /todos**  
     Membuat todo baru.  
-    Body:  
+    Body:
     ```json
     {
       "title": "Judul Todo",
@@ -23,7 +23,7 @@ API sederhana untuk manajemen Todo menggunakan Express dan Prisma (MySQL).
     ```
   - **PUT /todos/:id**  
     Memperbarui todo berdasarkan ID.  
-    Body:  
+    Body:
     ```json
     {
       "title": "Judul Baru",
@@ -34,15 +34,77 @@ API sederhana untuk manajemen Todo menggunakan Express dan Prisma (MySQL).
   - **DELETE /todos/:id**  
     Menghapus todo berdasarkan ID.
 
+## Struktur Response API
+
+### Response Sukses
+
+```json
+{
+  "success": true,
+  "message": "Pesan sukses",
+  "data": [ ... ],      // array data utama
+  "meta": { ... }       // opsional, untuk pagination
+}
+```
+
+Contoh:
+
+```json
+{
+  "success": true,
+  "message": "Todos retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "title": "Belajar Express",
+      "description": "Praktek API",
+      "completed": false
+    }
+  ],
+  "meta": {
+    "totalData": 10,
+    "totalPages": 2,
+    "currentPage": 1
+  }
+}
+```
+
+### Response Error
+
+```json
+{
+  "success": false,
+  "message": "Terdapat kesalahan pada input yang diberikan",
+  "errors": [
+    {
+      "message": "completed must be a boolean value",
+      "field": "completed"
+    }
+  ]
+}
+```
+
+Contoh lain:
+
+```json
+{
+  "success": false,
+  "message": "Todo not found",
+  "errors": []
+}
+```
+
 ## Instalasi & Menjalankan
 
 1. **Clone repo & install dependencies**
+
    ```sh
    npm ci
    ```
 
 2. **Set environment variable**  
    Edit file [.env](.env) sesuai kebutuhan, khususnya:
+
    ```
    API_KEY=12345
    APP_PORT=5000
@@ -50,11 +112,13 @@ API sederhana untuk manajemen Todo menggunakan Express dan Prisma (MySQL).
    ```
 
 3. **Migrasi database**
+
    ```sh
    npx prisma migrate deploy
    ```
 
 4. **Generate Prisma Client**
+
    ```sh
    npx prisma generate
    ```
@@ -67,9 +131,11 @@ API sederhana untuk manajemen Todo menggunakan Express dan Prisma (MySQL).
 ## Autentikasi
 
 Setiap request ke endpoint harus menyertakan header:
+
 ```
 x-api-key: <API_KEY>
 ```
+
 Jika tidak, akan mendapat respons 401 Unauthorized.
 
 ## Validasi

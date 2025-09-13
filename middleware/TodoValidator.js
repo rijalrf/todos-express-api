@@ -1,25 +1,35 @@
 import { body, param, validationResult } from "express-validator";
+import ApiError from "../utils/ApiError.js";
 
 // Aturan validasi untuk endpoint getTodoById
-const getTodoValidationRules = [
+export const createOrUpdateTodoRules = [
   body("title").notEmpty().withMessage("titile is required"),
 ];
 
+export const updateStatusTodoRules = [
+  param("id").notEmpty().isInt().withMessage("ID must be an integer"),
+  body("completed")
+    .isBoolean()
+    .withMessage("completed must be a boolean value"),
+];
+
 // Middleware untuk mengecek hasil validasi
-const validate = (req, res, next) => {
+export const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) {
     return next(); // Jika tidak ada error, lanjutkan ke controller
   }
 
-  // Jika ada error, kirim respons 422 Unprocessable Entity
-  return res.status(422).json({
-    success: false,
-    errors: errors.array().map((err) => ({
-      message: err.msg,
-    })),
-  });
-};
+  const extractedErrors = errors
+    .array()
+    .map((err) => ({ message: err.msg, field: err.path }));
 
-// Ekspor middleware validasi
-export { getTodoValidationRules, validate };
+  // Buat ApiError dengan pesan umum, dan sertakan semua detail errornya.
+  return next(
+    new ApiError(
+      400,
+      "Terdapat kesalahan pada input yang diberikan",
+      extractedErrors
+    )
+  );
+};

@@ -1,54 +1,55 @@
 import { PrismaClient } from "@prisma/client";
-import { body, param, validationResult } from "express-validator";
+import sendSuccess from "../utils/responseHandler.js";
+import ApiError from "../utils/ApiError.js";
 
 const prisma = new PrismaClient();
 
-export const getTodos = async (req, res) => {
+export const getTodos = async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const offset = (page - 1) * limit;
+  const totalData = await prisma.todo.count();
+  const totalPages = Math.ceil(totalData / limit);
+  const meta = {
+    totalData: totalData,
+    totalPages: totalPages,
+    currentPage: page,
+  };
+
   try {
-    const response = await prisma.todo.findMany();
-    // If data is found, return it with a 200 status
-    res.status(200).json({
-      sucess: true,
-      message: "successfully retrieved data",
-      data: response,
+    const response = await prisma.todo.findMany({
+      skip: offset,
+      take: limit,
     });
+    return sendSuccess(
+      res,
+      200,
+      "Todos retrieved successfully",
+      response,
+      meta
+    );
   } catch (error) {
-    res.status(500).json({
-      sucess: false,
-      error: error.message,
-      data: null,
-    });
+    return next(new ApiError(500, error.message));
   }
 };
 
-export const getTodoById = async (req, res) => {
+export const getTodoById = async (req, res, next) => {
   try {
     const response = await prisma.todo.findUnique({
       where: {
         id: Number(req.params.id),
       },
     });
-    // Check if response is null (not found)
     if (!response) {
-      return res.status(404).json({
-        sucess: false,
-        error: "Todo not found",
-      });
+      return next(new ApiError(404, "Todo not found"));
     }
-    res.status(200).json({
-      sucess: true,
-      message: "Todo found",
-      data: response,
-    });
+    return sendSuccess(res, 200, "Todo found", response);
   } catch (error) {
-    res.status(500).json({
-      sucess: false,
-      error: error.message,
-    });
+    return next(new ApiError(500, error.message));
   }
 };
 
-export const createTodo = async (req, res) => {
+export const createTodo = async (req, res, next) => {
   try {
     const response = await prisma.todo.create({
       data: {
@@ -56,20 +57,13 @@ export const createTodo = async (req, res) => {
         description: req.body.description,
       },
     });
-    res.status(201).json({
-      sucess: true,
-      message: "Todo created successfully",
-      data: response,
-    });
+    return sendSuccess(res, 201, "Todo created successfully", response);
   } catch (error) {
-    res.status(500).json({
-      sucess: false,
-      error: error.message,
-    });
+    return next(new ApiError(500, error.message));
   }
 };
 
-export const updateTodo = async (req, res) => {
+export const updateTodo = async (req, res, next) => {
   try {
     const response = await prisma.todo.update({
       where: {
@@ -81,34 +75,37 @@ export const updateTodo = async (req, res) => {
         completed: Boolean(req.body.completed),
       },
     });
-    res.status(200).json({
-      sucess: true,
-      message: "Todo updated successfully",
-      data: response,
-    });
+    return sendSuccess(res, 200, "Todo updated successfully", response);
   } catch (error) {
-    res.status(500).json({
-      sucess: false,
-      error: error.message,
-    });
+    return next(new ApiError(500, error.message));
   }
 };
 
-export const deleteTodo = async (req, res) => {
+export const deleteTodo = async (req, res, next) => {
   try {
-    const response = await prisma.todo.delete({
+    await prisma.todo.delete({
       where: {
         id: parseInt(req.params.id),
       },
     });
-    res.status(200).json({
-      sucess: true,
-      message: "Todo deleted successfully",
-    });
+    return sendSuccess(res, 200, "Todo deleted successfully");
   } catch (error) {
-    res.status(500).json({
-      sucess: false,
-      error: error.message,
+    return next(new ApiError(500, error.message));
+  }
+};
+
+export const updateStatusTodo = async (req, res, next) => {
+  try {
+    const response = await prisma.todo.update({
+      where: {
+        id: parseInt(req.params.id),
+      },
+      data: {
+        completed: Boolean(req.body.completed),
+      },
     });
+    return sendSuccess(res, 200, "Todo status updated successfully", response);
+  } catch (error) {
+    return next(new ApiError(500, error.message));
   }
 };

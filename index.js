@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import dotenv from "dotenv";
 import TodoRouter from "./routes/TodoRoutes.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
 
@@ -11,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(TodoRouter);
 app.use(helmet());
+app.use(errorHandler);
 
 app.listen(process.env.APP_PORT, () => {
   console.log("Server is running on port " + process.env.APP_PORT);
