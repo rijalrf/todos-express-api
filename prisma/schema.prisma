@@ -16,22 +16,22 @@ datasource db {
 
 
 // Define your database table Todos
-model todo {
+model Todo {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
   deadline    DateTime?
   completed   Boolean  @default(false)
-  todoItems   todoitem[]
+  todoItems   TodoItem[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model todoitem {
+model TodoItem {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  todo        todo     @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  todo        Todo     @relation(fields: [todoId], references: [id], onDelete: Cascade)
   todoId      Int
   completed   Boolean  @default(false)
   deadline    DateTime?
@@ -39,7 +39,7 @@ model todoitem {
   updatedAt   DateTime @updatedAt
 }
 
-model user {
+model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String?
