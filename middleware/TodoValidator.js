@@ -13,6 +13,10 @@ export const updateStatusTodoRules = [
     .withMessage("completed must be a boolean value"),
 ];
 
+export const createOrUpdateTodoItemRules = [
+  body("title").notEmpty().withMessage("title is required"),
+];
+
 // Middleware untuk mengecek hasil validasi
 export const validate = (req, res, next) => {
   const errors = validationResult(req);
