@@ -1,6 +1,6 @@
 // auth header api key check middleware
 const auth = (req, res, next) => {
-  const apiKey = req.header("api_key");
+  const apiKey = req.header("x-api-key");
   if (apiKey && apiKey === process.env.API_KEY) {
     next();
   } else {
