@@ -1,4 +1,9 @@
 import express from "express";
+import auth from "../middleware/auth.js";
+import {
+  getTodoValidationRules,
+  validate,
+} from "../middleware/TodoValidator.js";
 import {
   getTodos,
   createTodo,
@@ -9,10 +14,10 @@ import {
 
 const router = express.Router();
 
-router.get("/todos", getTodos);
-router.post("/todos", createTodo);
-router.get("/todos/:id", getTodoById);
-router.put("/todos/:id", updateTodo);
-router.delete("/todos/:id", deleteTodo);
+router.get("/todos", auth, getTodos);
+router.post("/todos", auth, getTodoValidationRules, validate, createTodo);
+router.get("/todos/:id", auth, getTodoById);
+router.put("/todos/:id", auth, getTodoValidationRules, validate, updateTodo);
+router.delete("/todos/:id", auth, deleteTodo);
 
 export default router;
