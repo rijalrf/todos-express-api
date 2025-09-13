@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `todo` ADD COLUMN `deadline` DATETIME(3) NULL;
+ALTER TABLE `Todo` ADD COLUMN `deadline` DATETIME(3) NULL;
 
 -- CreateTable
 CREATE TABLE `TodoItem` (
