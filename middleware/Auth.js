@@ -1,12 +1,11 @@
+// auth header api key check middleware
 const auth = (req, res, next) => {
-  const token = req.header("x-api-key");
-  if (!token || token !== process.env.API_KEY) {
-    return res.status(401).json({
-      success: false,
-      error: "Unauthorized",
-    });
+  const apiKey = req.header("api_key");
+  if (apiKey && apiKey === process.env.API_KEY) {
+    next();
+  } else {
+    res.status(401).json({ message: "Unauthorized" });
   }
-  next();
 };
 
 export default auth;
