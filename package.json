@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "migrate:deploy": "prisma migrate reset --force",
+    "migrate:deploy": "prisma migrate deploy",
     "start:prod": "npm run migrate:deploy && node index.js"
   },
   "keywords": [],
