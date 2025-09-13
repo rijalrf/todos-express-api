@@ -4,9 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "postinstall": "npx prisma generate",
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "migrate:deploy": "prisma migrate deploy",
+    "start:prod": "npm run migrate:deploy && node index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
