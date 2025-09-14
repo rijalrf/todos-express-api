@@ -12,11 +12,13 @@ import {
   updateTodo,
   deleteTodo,
   updateStatusTodo,
+  getAllTodoAndItems,
 } from "../controllers/TodoControllers.js";
 
 const router = express.Router();
 
 router.get("/todos", auth, getTodos);
+router.get("/todosanditems", auth, getAllTodoAndItems); // New route to get todos with their items
 router.post("/todos", auth, createOrUpdateTodoRules, validate, createTodo);
 router.get("/todos/:id", auth, getTodoById);
 router.put("/todos/:id", auth, createOrUpdateTodoRules, validate, updateTodo);

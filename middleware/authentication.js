@@ -4,7 +4,10 @@ const auth = (req, res, next) => {
   if (apiKey && apiKey === process.env.API_KEY) {
     next();
   } else {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({
+      sucess: false,
+      message: "Unauthorized",
+    });
   }
 };
 

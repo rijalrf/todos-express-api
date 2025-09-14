@@ -33,6 +33,22 @@ export const getTodos = async (req, res, next) => {
   }
 };
 
+export const getAllTodoAndItems = async (req, res, next) => {
+  try {
+    const response = await prisma.todo.findMany({
+      include: { todoItems: true },
+    });
+    return sendSuccess(
+      res,
+      200,
+      "Todos and items retrieved successfully",
+      response
+    );
+  } catch (error) {
+    return next(new ApiError(500, error.message));
+  }
+};
+
 export const getTodoById = async (req, res, next) => {
   try {
     const response = await prisma.todo.findUnique({

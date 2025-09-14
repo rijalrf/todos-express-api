@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export const getTodoItems = async (req, res, next) => {
   try {
     const todoId = parseInt(req.params.todoId);
-    const response = await prisma.todoItem.findMany({
+    const response = await prisma.todoitem.findMany({
       where: { todoId: todoId },
     });
     return sendSuccess(res, 200, "Todo items retrieved successfully", response);
@@ -19,7 +19,7 @@ export const getTodoItems = async (req, res, next) => {
 export const createTodoItem = async (req, res, next) => {
   try {
     const todoId = parseInt(req.params.todoId);
-    const response = await prisma.todoItem.create({
+    const response = await prisma.todoitem.create({
       data: {
         todoId: todoId,
         title: req.body.title,
@@ -34,7 +34,7 @@ export const createTodoItem = async (req, res, next) => {
 
 export const updateTodoItem = async (req, res, next) => {
   try {
-    const response = await prisma.todoItem.update({
+    const response = await prisma.todoitem.update({
       where: {
         id: parseInt(req.params.id),
       },
@@ -52,7 +52,7 @@ export const updateTodoItem = async (req, res, next) => {
 
 export const deleteTodoItem = async (req, res, next) => {
   try {
-    await prisma.todoItem.delete({
+    await prisma.todoitem.delete({
       where: {
         id: parseInt(req.params.id),
       },
@@ -65,7 +65,7 @@ export const deleteTodoItem = async (req, res, next) => {
 
 export const updateStatusTodoItem = async (req, res, next) => {
   try {
-    const response = await prisma.todoItem.update({
+    const response = await prisma.todoitem.update({
       where: {
         id: parseInt(req.params.id),
       },
