@@ -20,6 +20,7 @@ export const getTodos = async (req, res, next) => {
     const response = await prisma.todo.findMany({
       skip: offset,
       take: limit,
+      orderBy: { id: "desc" },
     });
     return sendSuccess(
       res,
@@ -37,6 +38,7 @@ export const getAllTodoAndItems = async (req, res, next) => {
   try {
     const response = await prisma.todo.findMany({
       include: { todoItems: true },
+      orderBy: { id: "desc" },
     });
     return sendSuccess(
       res,
@@ -121,6 +123,32 @@ export const updateStatusTodo = async (req, res, next) => {
       },
     });
     return sendSuccess(res, 200, "Todo status updated successfully", response);
+  } catch (error) {
+    return next(new ApiError(500, error.message));
+  }
+};
+
+export const updateTodoAndItems = async (req, res, next) => {
+  const { title, description, todoItems } = req.body;
+  const todoId = parseInt(req.params.id);
+  try {
+    const response = await prisma.todo.update({
+      where: { id: todoId },
+      data: {
+        title,
+        description,
+        todoItems: {
+          deleteMany: {}, // Hapus semua item yang ada
+          create: todoItems, // Tambahkan item baru dari request
+        },
+      },
+    });
+    return sendSuccess(
+      res,
+      200,
+      "Todo and items updated successfully",
+      response
+    );
   } catch (error) {
     return next(new ApiError(500, error.message));
   }

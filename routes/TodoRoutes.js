@@ -13,6 +13,7 @@ import {
   deleteTodo,
   updateStatusTodo,
   getAllTodoAndItems,
+  updateTodoAndItems,
 } from "../controllers/TodoControllers.js";
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.patch(
   validate,
   updateStatusTodo
 );
+router.put("/todosItems/:id", auth, updateTodoAndItems, validate, createTodo);
 router.delete("/todos/:id", auth, deleteTodo);
 
 export default router;

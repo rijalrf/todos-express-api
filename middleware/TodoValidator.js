@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 
 // Aturan validasi untuk endpoint getTodoById
 export const createOrUpdateTodoRules = [
-  body("title").notEmpty().withMessage("titile is required"),
+  body("title").notEmpty().withMessage("title is required"),
 ];
 
 export const updateStatusTodoRules = [
