@@ -12,7 +12,7 @@ const app = express();
 
 // trust first proxy
 // description : when the app is behind a proxy (e.g., Heroku, Nginx, etc.)
-// app.set("trust proxy", 1);
+app.set("trust proxy", 1);
 
 // use express json
 // description : to parse incoming requests with JSON payloads
@@ -20,18 +20,16 @@ app.use(express.json());
 
 // use cors
 // description : to allow cross-origin requests
-// app.use(
-//   cors({
-//     origin: process.env.CORS_ORIGIN.split(","),
-//     credentials: true,
-//   })
-// );
-
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN.split(","),
+    credentials: true,
+  })
+);
 
 // use helmet
 // description : to secure HTTP headers, helps to protect the app from some well-known web vulnerabilities
-// app.use(helmet());
+app.use(helmet());
 
 // routes
 // description : to handle different endpoints of the application
