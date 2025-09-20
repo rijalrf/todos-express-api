@@ -43,5 +43,10 @@ app.use(errorHandler);
 // listen on port
 // description : to start the server and listen for incoming requests on the specified port
 app.listen(process.env.APP_PORT, () => {
-  console.log("Server is running on port " + process.env.APP_PORT);
+  console.log(
+    "Server is running on port " +
+      process.env.APP_PORT +
+      ", and CORS " +
+      process.env.CORS_ORIGIN
+  );
 });
