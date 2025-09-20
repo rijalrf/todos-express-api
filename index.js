@@ -7,7 +7,7 @@ import TodoRouter from "./routes/todoRoutes.js";
 import TodoItemRoutes from "./routes/todoItemRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import AuthRoutes from "./routes/authRoutes.js";
-import { createToken } from "./utils/createToken.js";
+import { createToken } from "./utils/jwt.js";
 
 dotenv.config();
 

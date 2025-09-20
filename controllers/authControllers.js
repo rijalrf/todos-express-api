@@ -1,8 +1,8 @@
 import logger from "../middleware/logger.js";
 import ApiError from "../utils/ApiError.js";
 import { PrismaClient } from "@prisma/client";
-import { comparePassword, hashPassword } from "../utils/hashPassword.js";
-import { createRefreshToken, createToken } from "../utils/createToken.js";
+import { comparePassword, hashPassword } from "../utils/passwordHelper.js";
+import { createRefreshToken, createToken } from "../utils/jwt.js";
 import sendSuccess from "../utils/responseHandler.js";
 
 const prisma = new PrismaClient();
