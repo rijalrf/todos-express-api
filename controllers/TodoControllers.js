@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import sendSuccess from "../utils/responseHandler.js";
 import ApiError from "../utils/ApiError.js";
+import logger from "../middleware/logger.js";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +23,10 @@ export const getTodos = async (req, res, next) => {
       take: limit,
       orderBy: { id: "desc" },
     });
+    logger.info("success return data todo", {
+      skip: offset,
+      take: limit,
+    });
     return sendSuccess(
       res,
       200,
@@ -30,7 +35,8 @@ export const getTodos = async (req, res, next) => {
       meta
     );
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    logger.error(error.message);
+    return next(new ApiError(404, "internal server error"));
   }
 };
 
@@ -47,7 +53,7 @@ export const getAllTodoAndItems = async (req, res, next) => {
       response
     );
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };
 
@@ -63,7 +69,7 @@ export const getTodoById = async (req, res, next) => {
     }
     return sendSuccess(res, 200, "Todo found", response);
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };
 
@@ -77,7 +83,7 @@ export const createTodo = async (req, res, next) => {
     });
     return sendSuccess(res, 201, "Todo created successfully", response);
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };
 
@@ -95,7 +101,7 @@ export const updateTodo = async (req, res, next) => {
     });
     return sendSuccess(res, 200, "Todo updated successfully", response);
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };
 
@@ -108,7 +114,7 @@ export const deleteTodo = async (req, res, next) => {
     });
     return sendSuccess(res, 200, "Todo deleted successfully");
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };
 
@@ -124,7 +130,7 @@ export const updateStatusTodo = async (req, res, next) => {
     });
     return sendSuccess(res, 200, "Todo status updated successfully", response);
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };
 
@@ -150,6 +156,6 @@ export const updateTodoAndItems = async (req, res, next) => {
       response
     );
   } catch (error) {
-    return next(new ApiError(500, error.message));
+    return next(new ApiError(500, "internal server error"));
   }
 };

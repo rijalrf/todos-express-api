@@ -1,10 +1,10 @@
 import express from "express";
-import auth from "../middleware/authentication.js";
+import { authAPIKey } from "../middleware/authentication.js";
 import {
   createOrUpdateTodoRules,
   updateStatusTodoRules,
   validate,
-} from "../middleware/TodoValidator.js";
+} from "../middleware/todoValidator.js";
 import {
   getTodos,
   createTodo,
@@ -14,23 +14,41 @@ import {
   updateStatusTodo,
   getAllTodoAndItems,
   updateTodoAndItems,
-} from "../controllers/TodoControllers.js";
+} from "../controllers/todoControllers.js";
 
 const router = express.Router();
 
-router.get("/todos", auth, getTodos);
-router.get("/todosanditems", auth, getAllTodoAndItems); // New route to get todos with their items
-router.post("/todos", auth, createOrUpdateTodoRules, validate, createTodo);
-router.get("/todos/:id", auth, getTodoById);
-router.put("/todos/:id", auth, createOrUpdateTodoRules, validate, updateTodo);
+router.get("/todos", authAPIKey, getTodos);
+router.get("/todosanditems", authAPIKey, getAllTodoAndItems); // New route to get todos with their items
+router.post(
+  "/todos",
+  authAPIKey,
+  createOrUpdateTodoRules,
+  validate,
+  createTodo
+);
+router.get("/todos/:id", authAPIKey, getTodoById);
+router.put(
+  "/todos/:id",
+  authAPIKey,
+  createOrUpdateTodoRules,
+  validate,
+  updateTodo
+);
 router.patch(
   "/todos/:id",
-  auth,
+  authAPIKey,
   updateStatusTodoRules,
   validate,
   updateStatusTodo
 );
-router.put("/todosItems/:id", auth, updateTodoAndItems, validate, createTodo);
-router.delete("/todos/:id", auth, deleteTodo);
+router.put(
+  "/todosItems/:id",
+  authAPIKey,
+  updateTodoAndItems,
+  validate,
+  createTodo
+);
+router.delete("/todos/:id", authAPIKey, deleteTodo);
 
 export default router;

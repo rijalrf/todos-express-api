@@ -3,7 +3,6 @@ const sendSuccess = (res, statusCode, message, data = null, meta = null) => {
     success: true,
     message: message,
   };
-
   if (data) {
     response.data = data;
   }

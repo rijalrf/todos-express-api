@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authAPIKey } from "../middleware/authentication.js";
 import {
   createTodoItem,
   deleteTodoItem,
@@ -9,27 +10,26 @@ import {
 import {
   createOrUpdateTodoItemRules,
   validate,
-} from "../middleware/TodoValidator.js";
-import auth from "../middleware/authentication.js";
+} from "../middleware/todoValidator.js";
 
 const router = Router();
 
-router.get("/todos/:todoId/items", auth, getTodoItems);
+router.get("/todos/:todoId/items", authAPIKey, getTodoItems);
 router.post(
   "/todos/:todoId/items",
-  auth,
+  authAPIKey,
   createOrUpdateTodoItemRules,
   validate,
   createTodoItem
 );
 router.put(
   "/todos/items/:id",
-  auth,
+  authAPIKey,
   createOrUpdateTodoItemRules,
   validate,
   updateTodoItem
 );
-router.patch("/todos/items/:id", auth, updateStatusTodoItem);
-router.delete("/todos/items/:id", auth, deleteTodoItem);
+router.patch("/todos/items/:id", authAPIKey, updateStatusTodoItem);
+router.delete("/todos/items/:id", authAPIKey, deleteTodoItem);
 
 export default router;

@@ -2,9 +2,12 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import dotenv from "dotenv";
-import TodoRouter from "./routes/TodoRoutes.js";
+import morgan from "morgan";
+import TodoRouter from "./routes/todoRoutes.js";
 import TodoItemRoutes from "./routes/todoItemRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
+import AuthRoutes from "./routes/authRoutes.js";
+import { createToken } from "./utils/createToken.js";
 
 dotenv.config();
 
@@ -31,10 +34,20 @@ app.use(
 // description : to secure HTTP headers, helps to protect the app from some well-known web vulnerabilities
 app.use(helmet());
 
+// use morgan to logger
+app.use(morgan("dev"));
+
 // routes
 // description : to handle different endpoints of the application
+app.use(AuthRoutes);
 app.use(TodoRouter);
 app.use(TodoItemRoutes);
+
+// app.post("/token-test", async (req, res) => {
+//   const { email, userId } = req.body;
+//   const response = createToken(email, userId);
+//   res.status(200).json(response);
+// });
 
 // error handler
 // description : to handle errors that occur in the application
