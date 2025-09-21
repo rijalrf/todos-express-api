@@ -55,7 +55,8 @@ npm start                # production
 ### Users
 
 - `GET /users` → list semua user
-- `POST /users` → buat user baru
+- `GET /users/:id` → ambil user berdasarkan id
+- `POST /register` → buat user baru
 
 ### Todos
 
