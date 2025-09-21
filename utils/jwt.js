@@ -1,40 +1,62 @@
 import jwt from "jsonwebtoken";
 
 export const createToken = (email, userId) => {
-  const optionsAccessToken = {
-    expiresIn: "1h",
-  };
-  const playload_access_token = {
-    email: email,
-    userId: userId,
-  };
+  const ACCESS_EXP = "15m";
+  const REFRESH_EXP = "7d";
+
   const accessToken = jwt.sign(
-    playload_access_token,
-    process.env.JWT_SECRET_TOKEN,
-    optionsAccessToken
+    {
+      email: email,
+      userId: userId,
+    },
+    process.env.JWT_SECRET_ACCESS_TOKEN,
+    {
+      expiresIn: ACCESS_EXP,
+      issuer: "api.todo",
+      audience: "web",
+    }
   );
-  const expiredIn = 3600;
-  const refresh_token = createRefreshToken(email);
-  const response = {
-    access_token: accessToken,
-    token_type: "bearer",
-    expired: expiredIn,
-    refresh_token: refresh_token,
+
+  const refreshToken = jwt.sign(
+    {
+      email: email,
+      userId: userId,
+    },
+    process.env.JWT_SECRET_REFRESH_TOKEN,
+    {
+      expiresIn: REFRESH_EXP,
+      issuer: "api.todo",
+      audience: "web",
+    }
+  );
+  const accessExp = jwt.decode(accessToken).exp;
+  const refreshExp = jwt.decode(refreshToken).exp;
+
+  return {
+    accessToken,
+    accessExp,
+    refreshToken,
+    refreshExp,
   };
-  return response;
 };
 
-export const createRefreshToken = (email) => {
-  const optionsRefreshToken = {
-    expiresIn: "7d",
-  };
-  const playload_refresh_token = {
-    email: email,
-  };
-  const refrehToken = jwt.sign(
-    playload_refresh_token,
-    process.env.JWT_SECRET_REFRESH_TOKEN,
-    optionsRefreshToken
+export const verifAccessToken = (planToken) => {
+  const accessToken = jwt.verify(
+    planToken,
+    process.env.JWT_SECRET_ACCESS_TOKEN
   );
-  return refrehToken;
+
+  return accessToken;
+};
+export const verifRefreshToken = (planToken) => {
+  const refreshToken = jwt.verify(
+    planToken,
+    process.env.JWT_SECRET_REFRESH_TOKEN
+  );
+  return refreshToken;
+};
+
+export const decodeToken = (planToken) => {
+  const decode = jwt.decode(planToken);
+  return decode;
 };

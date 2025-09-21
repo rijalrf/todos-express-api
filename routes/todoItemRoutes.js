@@ -10,7 +10,7 @@ import {
 import {
   createOrUpdateTodoItemRules,
   validate,
-} from "../middleware/todoValidator.js";
+} from "../middleware/TodoValidator.js";
 
 const router = Router();
 

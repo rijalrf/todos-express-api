@@ -1,10 +1,6 @@
 import express from "express";
 import { authAPIKey } from "../middleware/authentication.js";
-import {
-  createOrUpdateTodoRules,
-  updateStatusTodoRules,
-  validate,
-} from "../middleware/todoValidator.js";
+
 import {
   getTodos,
   createTodo,
@@ -15,6 +11,11 @@ import {
   getAllTodoAndItems,
   updateTodoAndItems,
 } from "../controllers/todoControllers.js";
+import {
+  createOrUpdateTodoRules,
+  updateStatusTodoRules,
+  validate,
+} from "../middleware/TodoValidator.js";
 
 const router = express.Router();
 

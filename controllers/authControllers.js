@@ -1,47 +1,72 @@
 import logger from "../middleware/logger.js";
 import ApiError from "../utils/ApiError.js";
 import { PrismaClient } from "@prisma/client";
-import { comparePassword, hashPassword } from "../utils/passwordHelper.js";
-import { createRefreshToken, createToken } from "../utils/jwt.js";
+import { createToken, decodeToken, verifRefreshToken } from "../utils/jwt.js";
 import sendSuccess from "../utils/responseHandler.js";
+import { comparePasswod, hashPassword } from "../utils/passwordUtils.js";
 
 const prisma = new PrismaClient();
 
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
+
   try {
     const user = await prisma.user.findUnique({
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
       where: {
         email: email,
       },
     });
     if (!user) {
-      logger.info(`user dengan ${email}, tidak di temukan`);
-      return next(new ApiError(409, "email tidak di temukan"));
+      return next(
+        new ApiError(
+          401,
+          "email or password invalid, please check and try again"
+        )
+      );
     }
 
-    const isValid = await comparePassword(password, user.password);
-    if (!isValid) {
-      return next(new ApiError(404, "pasword tidak cocok"));
+    const validPassword = await comparePasswod(password, user.password);
+    if (!validPassword) {
+      return next(
+        new ApiError(
+          401,
+          "email or password invalid, please check and try again"
+        )
+      );
     }
-    const jwt = createToken(user.email, user.id);
+    const token = createToken(user.email, user.id);
+    const refreshToken = token.refreshToken;
+
     const updateUser = await prisma.user.update({
-      data: {
-        refreshToken: jwt.refresh_token,
-      },
       where: {
-        email: email,
+        id: user.id,
+      },
+      data: {
+        refreshToken: refreshToken,
       },
     });
     if (!updateUser) {
       return next(new ApiError("terjadi kesalahan saat login"));
     }
-    sendSuccess(res, 200, "login successfully", jwt);
+    sendSuccess(res, 200, "login successfully", {
+      access_token: token.accessToken,
+      refresh_token2: refreshToken,
+      token_type: "Bearer",
+      expired_in: token.accessExp,
+      refresh_token: refreshToken,
+      updateUser: updateUser,
+    });
   } catch (error) {
     logger.error("gagal membuat token", {
       email: email,
+      error: error.message,
     });
-    new ApiError(500, "gagal membuat token");
+    new ApiError(500, "gagal membuat token", error);
   }
 };
 
@@ -71,6 +96,10 @@ export const logout = async (req, res, next) => {
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
   const userRegister = await prisma.user.findUnique({
+    select: {
+      id: true,
+      email: true,
+    },
     where: {
       email: email,
     },
@@ -80,16 +109,14 @@ export const register = async (req, res, next) => {
     return next(new ApiError(409, "user email sudah di gunakan"));
   }
   const hash = await hashPassword(password);
-  const refreshToken = createRefreshToken(email);
-  console.log({ hash });
-  console.log({ refreshToken });
+  const refreshToken = createToken(email);
   try {
     const newUser = await prisma.user.create({
       data: {
         name: name,
         email: email,
         password: hash,
-        refreshToken: refreshToken,
+        refreshToken: refreshToken.refreshToken,
       },
     });
     sendSuccess(res, 201, "user registered successfully", {
@@ -103,13 +130,21 @@ export const register = async (req, res, next) => {
 };
 
 export const newToken = async (req, res, next) => {
+  // get req body
   const { grant_type, refresh_token } = req.body;
+
+  //validate grant_type
   if (grant_type !== "refresh_token") {
-    logger.error(`invalid grant_type pada ${grant_type}`);
-    return next(new ApiError(404, "invalid grant_type"));
+    return next(new ApiError(401, "unauthorization"));
   }
+
   try {
     const user = await prisma.user.findFirst({
+      select: {
+        id: true,
+        email: true,
+        refreshToken: true,
+      },
       where: {
         refreshToken: refresh_token,
       },
@@ -121,7 +156,7 @@ export const newToken = async (req, res, next) => {
     const newToken = createToken(user.email, user.id);
     const updateUser = await prisma.user.update({
       data: {
-        refreshToken: newToken.refresh_token,
+        refreshToken: newToken.refreshToken,
       },
       where: {
         id: user.id,
@@ -132,7 +167,13 @@ export const newToken = async (req, res, next) => {
         new ApiError(500, "terjadi kesalahan saat mmebuat token baru")
       );
     }
-    sendSuccess(res, 200, "token created successfully", newToken);
+    const response = {
+      access_token: newToken.accessToken,
+      token_type: "Bearer",
+      expired_in: newToken.accessExp,
+      refresh_token: newToken.refreshToken,
+    };
+    sendSuccess(res, 200, "token created successfully", response);
   } catch (error) {
     logger.error(
       "terjadi kesalahan saat memuat token baru, exception : " + error.message

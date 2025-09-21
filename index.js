@@ -3,11 +3,11 @@ import helmet from "helmet";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import TodoRouter from "./routes/todoRoutes.js";
+import TodoRoutes from "./routes/todoRoutes.js";
 import TodoItemRoutes from "./routes/todoItemRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import AuthRoutes from "./routes/authRoutes.js";
-import { createToken } from "./utils/jwt.js";
+import UserRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -40,8 +40,9 @@ app.use(morgan("dev"));
 // routes
 // description : to handle different endpoints of the application
 app.use(AuthRoutes);
-app.use(TodoRouter);
+app.use(TodoRoutes);
 app.use(TodoItemRoutes);
+app.use(UserRoutes);
 
 // app.post("/token-test", async (req, res) => {
 //   const { email, userId } = req.body;
