@@ -1,3 +1,6 @@
+import morgan from "morgan";
+import logger from "./logger.js";
+
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Terjadi kesalahan internal pada server";
@@ -11,9 +14,11 @@ const errorHandler = (err, req, res, next) => {
   // Jika ada, tambahkan ke dalam respons JSON kita.
   if (err.errors) {
     errorResponse.errors = err.errors;
+    //logger
+    const error = err.errors;
+    const log = morgan("dev");
+    logger.error("error exception", { log, error });
   }
-
-  // ... (sisa kodenya sama, untuk menampilkan stack trace di development)
 
   return res.status(statusCode).json(errorResponse);
 };
