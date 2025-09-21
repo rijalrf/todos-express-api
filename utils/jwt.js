@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 
 export const createToken = (email, userId) => {
-  const ACCESS_EXP = "15m";
-  const REFRESH_EXP = "1m";
+  const ACCESS_EXP = "1m";
+  const REFRESH_EXP = "1d";
 
   const accessToken = jwt.sign(
     {
@@ -41,10 +41,8 @@ export const createToken = (email, userId) => {
 };
 
 export const verifAccessToken = (planToken) => {
-  const accessToken = jwt.verify(
-    planToken,
-    process.env.JWT_SECRET_ACCESS_TOKEN
-  );
+  const token = planToken.split(" ")[1];
+  const accessToken = jwt.verify(token, process.env.JWT_SECRET_ACCESS_TOKEN);
 
   return accessToken;
 };

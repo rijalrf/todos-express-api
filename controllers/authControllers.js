@@ -53,12 +53,14 @@ export const login = async (req, res, next) => {
     if (!updateUser) {
       return next(new ApiError("terjadi kesalahan saat login"));
     }
-    sendSuccess(res, 200, "login successfully", {
-      access_token: token.accessToken,
-      token_type: "Bearer",
-      expired_in: token.accessExp,
-      refresh_token: token.refreshToken,
+    res.header("Authorization", token.accessToken);
+    res.cookie("rt", token.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    sendSuccess(res, 200, "login successfully");
   } catch (error) {
     logger.error("gagal membuat token", {
       email: email,
