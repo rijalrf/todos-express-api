@@ -19,7 +19,6 @@ const errorHandler = (err, req, res, next) => {
     const log = morgan("dev");
     logger.error("error exception", { log, error });
   }
-
   return res.status(statusCode).json(errorResponse);
 };
 

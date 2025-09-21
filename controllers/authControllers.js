@@ -1,16 +1,19 @@
 import logger from "../middleware/logger.js";
 import ApiError from "../utils/ApiError.js";
 import { PrismaClient } from "@prisma/client";
-import { createToken, decodeToken, verifRefreshToken } from "../utils/jwt.js";
+import { createToken, verifRefreshToken } from "../utils/jwt.js";
 import sendSuccess from "../utils/responseHandler.js";
-import { comparePasswod, hashPassword } from "../utils/passwordUtils.js";
+import { comparePassword, hashPassword } from "../utils/passwordUtils.js";
+import { cryptoHash } from "../utils/cryptoHash.js";
 
 const prisma = new PrismaClient();
 
 export const login = async (req, res, next) => {
+  // ambil value body
   const { email, password } = req.body;
 
   try {
+    // cari user dengan email credential
     const user = await prisma.user.findUnique({
       select: {
         id: true,
@@ -21,6 +24,7 @@ export const login = async (req, res, next) => {
         email: email,
       },
     });
+    //jika tidak ada data usernya kirim error
     if (!user) {
       return next(
         new ApiError(
@@ -30,7 +34,8 @@ export const login = async (req, res, next) => {
       );
     }
 
-    const validPassword = await comparePasswod(password, user.password);
+    // validasi password
+    const validPassword = await comparePassword(password, user.password);
     if (!validPassword) {
       return next(
         new ApiError(
@@ -39,57 +44,58 @@ export const login = async (req, res, next) => {
         )
       );
     }
-    const token = createToken(user.email, user.id);
 
-    const updateUser = await prisma.user.update({
+    // buat token
+    const token = createToken(user.email, user.id);
+    const rtHash = cryptoHash(token.refreshToken);
+
+    // insert token ke db
+    await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
-        rtHash: token.refreshToken,
+        rtHash: rtHash,
         rtExpiredAt: new Date(token.refreshExp * 1000),
       },
     });
-    if (!updateUser) {
-      return next(new ApiError("terjadi kesalahan saat login"));
-    }
-    res.header("Authorization", token.accessToken);
+
+    // kirim cookie
     res.cookie("rt", token.refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/auth/token",
     });
-    sendSuccess(res, 200, "login successfully");
+
+    //kirim response body
+    sendSuccess(res, 200, "login successfully", {
+      access_token: token.accessToken,
+      token_type: "Bearer",
+      expired_in: token.accessExp,
+    });
   } catch (error) {
-    logger.error("gagal membuat token", {
-      email: email,
-      error: error.message,
-    });
-    new ApiError(500, "gagal membuat token", error);
+    return next(new ApiError(500, "email or password invalid", error));
   }
 };
 
 export const logout = async (req, res, next) => {
   const { userId } = req.body;
   try {
-    const userLogout = await prisma.user.update({
+    await prisma.user.update({
       data: {
-        refreshToken: null,
+        rtHash: null,
+        rtExpiredAt: null,
       },
       where: {
         id: userId,
       },
     });
-    if (!userLogout) {
-      return next(new ApiError(500, "terjadi kesalahan saat proses logout"));
-    }
+    res.clearCookie("rt", { path: "/auth/token" });
     sendSuccess(res, 200, "logout successfully");
   } catch (error) {
-    logger.error("terjadi error saat logout", {
-      error_exception: error.message,
-    });
-    return next(new ApiError(500, "terjadi kesalahan saat logout"));
+    return next(new ApiError(500, "invalid process logout", error));
   }
 };
 
@@ -105,28 +111,25 @@ export const register = async (req, res, next) => {
     },
   });
   if (userRegister) {
-    logger.error(`user dengan email ${email}, sudah di gunakan`);
-    return next(new ApiError(409, "user email sudah di gunakan"));
+    return next(new ApiError(409, "user already registered"));
   }
   const hash = await hashPassword(password);
-  const refreshToken = createToken(email);
   try {
     const newUser = await prisma.user.create({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
       data: {
         name: name,
         email: email,
         password: hash,
-        rtHash: refreshToken.refreshToken,
-        rtExpiredAt: new Date(refreshToken.refreshExp * 1000),
       },
     });
-    sendSuccess(res, 201, "user registered successfully", {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-    });
+    sendSuccess(res, 201, "user registered successfully", newUser);
   } catch (error) {
-    return next(new ApiError(500, "gagal untuk create user " + error.message));
+    return next(new ApiError(500, "failed to register user", error));
   }
 };
 
@@ -139,6 +142,7 @@ export const token = async (req, res, next) => {
     return next(new ApiError(401, "unauthorization"));
   }
 
+  const rtHash = cryptoHash(refresh_token);
   try {
     const user = await prisma.user.findFirst({
       select: {
@@ -147,7 +151,7 @@ export const token = async (req, res, next) => {
         rtHash: true,
       },
       where: {
-        rtHash: refresh_token,
+        rtHash: rtHash,
       },
     });
     if (!user) {
@@ -179,12 +183,6 @@ export const token = async (req, res, next) => {
     };
     sendSuccess(res, 200, "token created successfully", response);
   } catch (error) {
-    logger.error("terjadi kesalahan saat memuat token baru");
-    return next(
-      new ApiError(
-        500,
-        "gagal membuat token baru, error exception " + error.message
-      )
-    );
+    return next(new ApiError(500, "invalid to create token", error));
   }
 };

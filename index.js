@@ -2,12 +2,12 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import dotenv from "dotenv";
-import morgan from "morgan";
 import TodoRoutes from "./routes/todoRoutes.js";
 import TodoItemRoutes from "./routes/todoItemRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import AuthRoutes from "./routes/authRoutes.js";
 import UserRoutes from "./routes/userRoutes.js";
+import { cryptoHash } from "./utils/cryptoHash.js";
 
 dotenv.config();
 
@@ -34,8 +34,9 @@ app.use(
 // description : to secure HTTP headers, helps to protect the app from some well-known web vulnerabilities
 app.use(helmet());
 
-// use morgan to logger
-app.use(morgan("dev"));
+app.post("/hash", (req, res) => {
+  res.json(cryptoHash(req.body.text));
+});
 
 // routes
 // description : to handle different endpoints of the application
@@ -44,12 +45,6 @@ app.use(TodoRoutes);
 app.use(TodoItemRoutes);
 app.use(UserRoutes);
 
-// app.post("/token-test", async (req, res) => {
-//   const { email, userId } = req.body;
-//   const response = createToken(email, userId);
-//   res.status(200).json(response);
-// });
-
 // error handler
 // description : to handle errors that occur in the application
 app.use(errorHandler);
@@ -57,10 +52,5 @@ app.use(errorHandler);
 // listen on port
 // description : to start the server and listen for incoming requests on the specified port
 app.listen(process.env.APP_PORT, () => {
-  console.log(
-    "Server is running on port " +
-      process.env.APP_PORT +
-      ", and CORS " +
-      process.env.CORS_ORIGIN
-  );
+  console.log(`Server Up and Running on Port ${process.env.APP_PORT}`);
 });

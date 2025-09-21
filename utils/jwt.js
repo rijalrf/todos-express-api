@@ -1,13 +1,14 @@
 import jwt from "jsonwebtoken";
+import { randomUUID } from "crypto";
 
 export const createToken = (email, userId) => {
   const ACCESS_EXP = "1m";
-  const REFRESH_EXP = "1d";
+  const REFRESH_EXP = "1m";
 
   const accessToken = jwt.sign(
     {
-      email: email,
-      userId: userId,
+      sub: userId,
+      email,
     },
     process.env.JWT_SECRET_ACCESS_TOKEN,
     {
@@ -16,11 +17,12 @@ export const createToken = (email, userId) => {
       audience: "web",
     }
   );
-
+  const jti = randomUUID();
   const refreshToken = jwt.sign(
     {
-      email: email,
-      userId: userId,
+      sub: userId,
+      email,
+      jti,
     },
     process.env.JWT_SECRET_REFRESH_TOKEN,
     {
@@ -37,6 +39,7 @@ export const createToken = (email, userId) => {
     accessExp,
     refreshToken,
     refreshExp,
+    jti,
   };
 };
 
