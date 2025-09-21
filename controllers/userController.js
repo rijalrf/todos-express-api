@@ -1,18 +1,19 @@
 import { PrismaClient } from "@prisma/client";
+import ApiError from "../utils/ApiError.js";
+import sendSuccess from "../utils/responseHandler.js";
 
 const prisma = new PrismaClient();
 
-export const getUsers = async (req, res) => {
+export const getUsers = async (req, res, next) => {
   try {
     const users = await prisma.user.findMany();
-    res.json(users);
+    sendSuccess(res, 200, "success retrieve user list", users);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Gagal mengambil data user" });
+    return next(new ApiError(500, "failed to get user list", error));
   }
 };
 
-export const getUserById = async (req, res) => {
+export const getUserById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -23,12 +24,11 @@ export const getUserById = async (req, res) => {
     });
 
     if (user) {
-      res.json(user);
+      sendSuccess(res, 200, "success retrieve user", user);
     } else {
-      res.status(404).json({ error: "User tidak ditemukan" });
+      return next(new ApiError(404, "user doesn't exist"));
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Gagal mengambil data user" });
+    return next(new ApiError(500, "failed to get user", error));
   }
 };
