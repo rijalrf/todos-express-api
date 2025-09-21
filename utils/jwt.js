@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 export const createToken = (email, userId) => {
   const ACCESS_EXP = "15m";
-  const REFRESH_EXP = "7d";
+  const REFRESH_EXP = "1m";
 
   const accessToken = jwt.sign(
     {

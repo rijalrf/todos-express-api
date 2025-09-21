@@ -40,14 +40,14 @@ export const login = async (req, res, next) => {
       );
     }
     const token = createToken(user.email, user.id);
-    const refreshToken = token.refreshToken;
 
     const updateUser = await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
-        refreshToken: refreshToken,
+        refreshToken: token.refreshToken,
+        refreshTokenExpiredAt: new Date(token.refreshExp * 1000),
       },
     });
     if (!updateUser) {
@@ -55,11 +55,9 @@ export const login = async (req, res, next) => {
     }
     sendSuccess(res, 200, "login successfully", {
       access_token: token.accessToken,
-      refresh_token2: refreshToken,
       token_type: "Bearer",
       expired_in: token.accessExp,
-      refresh_token: refreshToken,
-      updateUser: updateUser,
+      refresh_token: token.refreshToken,
     });
   } catch (error) {
     logger.error("gagal membuat token", {
@@ -117,6 +115,7 @@ export const register = async (req, res, next) => {
         email: email,
         password: hash,
         refreshToken: refreshToken.refreshToken,
+        rtExpiredAt: new Date(refreshToken.refreshExp * 1000),
       },
     });
     sendSuccess(res, 201, "user registered successfully", {
@@ -125,11 +124,11 @@ export const register = async (req, res, next) => {
       email: newUser.email,
     });
   } catch (error) {
-    return next(new ApiError(500, "gagal untuk create user"));
+    return next(new ApiError(500, "gagal untuk create user " + error.message));
   }
 };
 
-export const newToken = async (req, res, next) => {
+export const token = async (req, res, next) => {
   // get req body
   const { grant_type, refresh_token } = req.body;
 
@@ -153,10 +152,13 @@ export const newToken = async (req, res, next) => {
       logger.error(`user tidak di temukan dari refresh token yg di berikan`);
       return next(new ApiError(404, "refresh token doesn't exist"));
     }
-    const newToken = createToken(user.email, user.id);
+
+    const playload = verifRefreshToken(refresh_token);
+    const newToken = createToken(playload.email, playload.userId);
     const updateUser = await prisma.user.update({
       data: {
         refreshToken: newToken.refreshToken,
+        refreshTokenExpiredAt: new Date(newToken.refreshExp * 1000),
       },
       where: {
         id: user.id,
@@ -175,9 +177,7 @@ export const newToken = async (req, res, next) => {
     };
     sendSuccess(res, 200, "token created successfully", response);
   } catch (error) {
-    logger.error(
-      "terjadi kesalahan saat memuat token baru, exception : " + error.message
-    );
+    logger.error("terjadi kesalahan saat memuat token baru");
     return next(
       new ApiError(
         500,

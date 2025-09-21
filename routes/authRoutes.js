@@ -2,7 +2,7 @@ import express from "express";
 import {
   login,
   logout,
-  newToken,
+  token,
   register,
 } from "../controllers/authControllers.js";
 import {
@@ -18,6 +18,6 @@ const router = express.Router();
 router.post("/login", loginValidator, validateValidator, login);
 router.delete("/logout", logout);
 router.post("/register", registeralidator, validateValidator, register);
-router.post("/token", refreshTokenValidator, validate, newToken);
+router.post("/token", refreshTokenValidator, validate, token);
 
 export default router;
