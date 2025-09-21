@@ -44,7 +44,7 @@ model user {
   email     String   @unique
   name      String?
   password  String
-  refreshToken String? @db.Text
+  rtHash String? @db.Text
   rtExpiredAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

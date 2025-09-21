@@ -46,8 +46,8 @@ export const login = async (req, res, next) => {
         id: user.id,
       },
       data: {
-        refreshToken: token.refreshToken,
-        refreshTokenExpiredAt: new Date(token.refreshExp * 1000),
+        rtHash: token.refreshToken,
+        rtExpiredAt: new Date(token.refreshExp * 1000),
       },
     });
     if (!updateUser) {
@@ -114,7 +114,7 @@ export const register = async (req, res, next) => {
         name: name,
         email: email,
         password: hash,
-        refreshToken: refreshToken.refreshToken,
+        rtHash: refreshToken.refreshToken,
         rtExpiredAt: new Date(refreshToken.refreshExp * 1000),
       },
     });
@@ -142,10 +142,10 @@ export const token = async (req, res, next) => {
       select: {
         id: true,
         email: true,
-        refreshToken: true,
+        rtHash: true,
       },
       where: {
-        refreshToken: refresh_token,
+        rtHash: refresh_token,
       },
     });
     if (!user) {
@@ -157,8 +157,8 @@ export const token = async (req, res, next) => {
     const newToken = createToken(playload.email, playload.userId);
     const updateUser = await prisma.user.update({
       data: {
-        refreshToken: newToken.refreshToken,
-        refreshTokenExpiredAt: new Date(newToken.refreshExp * 1000),
+        rtHash: newToken.refreshToken,
+        rtExpiredAt: new Date(newToken.refreshExp * 1000),
       },
       where: {
         id: user.id,
