@@ -8,16 +8,44 @@ import {
 import {
   loginValidator,
   refreshTokenValidator,
-  registeralidator,
+  registerValidator,
 } from "../middleware/authValidator.js";
 import { validateValidator } from "../middleware/validate.js";
-import { validate } from "../middleware/TodoValidator.js";
+import { authAPIKey } from "../middleware/authentication.js";
+import { authLimiter, tokenRefreshLimiter, strictAuthLimiter } from "../middleware/rateLimiter.js";
+import { createAccountLockoutMiddleware } from "../utils/accountLockout.js";
+import { suspiciousActivityDetector } from "../utils/auditLogger.js";
 
 const router = express.Router();
+const accountLockoutCheck = createAccountLockoutMiddleware();
 
-router.post("/login", loginValidator, validateValidator, login);
-router.delete("/logout", logout);
-router.post("/register", registeralidator, validateValidator, register);
-router.post("/token", refreshTokenValidator, validate, token);
+// Apply suspicious activity detector to all auth routes
+router.use(suspiciousActivityDetector);
+
+// Public routes with rate limiting and security checks
+router.post("/login", 
+  authLimiter, 
+  accountLockoutCheck,
+  loginValidator, 
+  validateValidator, 
+  login
+);
+
+router.post("/register", 
+  authLimiter, 
+  registerValidator, 
+  validateValidator, 
+  register
+);
+
+router.post("/token", 
+  tokenRefreshLimiter, 
+  refreshTokenValidator, 
+  validateValidator, 
+  token
+);
+
+// Protected routes (require authentication)
+router.delete("/logout", authAPIKey, logout);
 
 export default router;

@@ -1,30 +1,33 @@
 import ApiError from "../utils/ApiError.js";
 import { verifAccessToken } from "../utils/jwt.js";
 
-// auth header api key check middleware
+// Authentication middleware - validates access token and sets user context
 export const authAPIKey = (req, res, next) => {
-  const token = req.header("authorization");
-  if (token) {
-    try {
-      verifAccessToken(token);
-      next();
-    } catch (error) {
-      next(new ApiError(401, "token invalid", error));
-    }
-  } else {
-    res.status(401).json({
-      sucess: false,
-      message: "Unauthorized",
-    });
+  const authHeader = req.header("authorization");
+  
+  if (!authHeader) {
+    return next(new ApiError(401, "Authorization header missing"));
   }
 
-  // const apiKey = req.header("x-api-key");
-  // if (apiKey && apiKey === process.env.API_KEY) {
-  //   next();
-  // } else {
-  //   res.status(401).json({
-  //     sucess: false,
-  //     message: "Unauthorized",
-  //   });
-  // }
+  // Extract token from "Bearer <token>" format
+  const token = authHeader.startsWith("Bearer ") 
+    ? authHeader.slice(7) 
+    : authHeader;
+
+  try {
+    const decoded = verifAccessToken(token);
+    
+    // Set user context on request object for use in controllers
+    req.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+    };
+    
+    next();
+  } catch (error) {
+    next(new ApiError(401, "Invalid or expired token", error));
+  }
 };
+
+// Optional: Alternative name for clarity
+export const authenticate = authAPIKey;

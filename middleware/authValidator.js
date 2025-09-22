@@ -23,7 +23,7 @@ export const loginValidator = checkSchema({
   },
 });
 
-export const registeralidator = checkSchema({
+export const registerValidator = checkSchema({
   name: {
     in: "body",
     trim: true,
@@ -66,13 +66,37 @@ export const refreshTokenValidator = checkSchema({
   grant_type: {
     in: "body",
     notEmpty: {
-      errorMessage: "Unauthorization",
+      errorMessage: "grant_type is required",
+    },
+    equals: {
+      options: "refresh_token",
+      errorMessage: "grant_type must be 'refresh_token'",
     },
   },
   refresh_token: {
     in: "body",
     notEmpty: {
-      errorMessage: "Unauthorization",
+      errorMessage: "refresh_token is required",
+    },
+  },
+});
+
+// Alternative validator for cookie-based refresh token (future improvement)
+export const refreshTokenCookieValidator = checkSchema({
+  grant_type: {
+    in: "body",
+    notEmpty: {
+      errorMessage: "grant_type is required",
+    },
+    equals: {
+      options: "refresh_token",
+      errorMessage: "grant_type must be 'refresh_token'",
+    },
+  },
+  rt: {
+    in: "cookies",
+    notEmpty: {
+      errorMessage: "refresh token cookie is missing",
     },
   },
 });
